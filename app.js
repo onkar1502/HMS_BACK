@@ -20,6 +20,13 @@ app.use(
     allowedHeaders: 'Content-Type, Authorization'
   })
 );
+app.options('*', cors({
+  origin: [process.env.FRONTEND_URL_ONE, process.env.FRONTEND_URL_TWO],
+  methods: 'GET, POST, PUT, DELETE',
+  allowedHeaders: 'Content-Type, Authorization'
+}));
+
+
 
 app.use(cookieParser());
 app.use(express.json());
