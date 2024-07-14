@@ -12,21 +12,26 @@ import appointmentRouter from "./router/appointmentRouter.js";
 const app = express();
 config({ path: "./config.env" });
 
-app.use(
-  cors({
-    origin: [process.env.FRONTEND_URL_ONE, process.env.FRONTEND_URL_TWO],
-    method: [ "GET", "POST", "DELETE", "PUT"],
-    credentials: true,
-    allowedHeaders: 'Content-Type, Authorization'
-  })
-);
-app.options('*', cors({
-  origin: [process.env.FRONTEND_URL_ONE, process.env.FRONTEND_URL_TWO],
-  methods: 'GET, POST, PUT, DELETE',
-  allowedHeaders: 'Content-Type, Authorization'
-}));
+// CORS configuration
+const allowedOrigins = [process.env.FRONTEND_URL_ONE, process.env.FRONTEND_URL_TWO];
 
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ["GET", "POST", "DELETE", "PUT"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
+app.use(cors(corsOptions));
+
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
 
 app.use(cookieParser());
 app.use(express.json());
@@ -38,6 +43,7 @@ app.use(
     tempFileDir: "/tmp/",
   })
 );
+
 app.use("/api/v1/message", messageRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/appointment", appointmentRouter);
@@ -45,4 +51,5 @@ app.use("/api/v1/appointment", appointmentRouter);
 dbConnection();
 
 app.use(errorMiddleware);
+
 export default app;
